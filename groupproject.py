@@ -105,6 +105,8 @@ lr.fit(X_train_pca,y_train)
 print('Training accuracy:', lr.score(X_train_pca, y_train))
 print('Test accuracy:', lr.score(X_test_pca, y_test))
 
+X_test=X_test_pca
+X_train=X_train_pca
 
 #feat_labels = df[0:]
 #
