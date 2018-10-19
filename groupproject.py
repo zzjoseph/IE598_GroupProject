@@ -21,7 +21,7 @@ X, y = df.iloc[0:1700,0:26], df.InvGrd
 
 print( X.shape, y.shape)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.25, random_state=33)
+X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.25, random_state=42)
 print( X_train.shape, y_train.shape)
 
 # Standardize the features
@@ -105,8 +105,10 @@ lr.fit(X_train_pca,y_train)
 print('Training accuracy:', lr.score(X_train_pca, y_train))
 print('Test accuracy:', lr.score(X_test_pca, y_test))
 
-X_test=X_test_pca
-X_train=X_train_pca
+#X_test=X_test_pca
+#X_train=X_train_pca
+
+
 
 #feat_labels = df[0:]
 #
@@ -197,6 +199,14 @@ def plot_KPCA(*data):
     plt.suptitle("KPCA")
     plt.show()
 plot_KPCA(X, y)
+
+#Fit a logistic classifier model and print accuracy score
+
+
+lr = LogisticRegression(penalty='l1', C=1.0)
+lr.fit(X_train, y_train)
+print('Training accuracy:', lr.score(X_train, y_train))
+print('Test accuracy:', lr.score(X_test, y_test))
 
 
 
