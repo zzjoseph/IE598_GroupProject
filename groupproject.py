@@ -105,17 +105,19 @@ def plot_decision_regions(X, y, classifier, resolution=0.02):
                     label=cl)
 
 
-
 pca = PCA()
 X_train_pca = pca.fit_transform(X_train_std)
 pca.explained_variance_ratio_
 
 
-
+#
 #plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1])
+#plot_decision_regions(X_train_pca, y_train, classifier=lr)
 #plt.xlabel('PC 1')
 #plt.ylabel('PC 2')
+#plt.legend(loc='lower left')
 #plt.show()
+
 
 pca.explained_variance_ratio_.shape      
 
@@ -134,7 +136,7 @@ pca = PCA(n_components=15)
 X_train_pca = pca.fit_transform(X_train_std)
 X_test_pca = pca.transform(X_test_std)
 
-lr = LogisticRegression()
+lr = LogisticRegression(penalty='l1')
 lr.fit(X_train_pca,y_train)
 
 print('Training accuracy:', lr.score(X_train_pca, y_train))
@@ -165,10 +167,18 @@ print('Test accuracy:', lr.score(X_test_pca, y_test))
 
 
 
-lda = LDA(n_components=15)
+lda = LDA()
 X_train_lda = lda.fit_transform(X_train_std, y_train)
 X_test_lda = lda.transform(X_test_std)
 
+#lda.explained_variance_ratio_.shape      
+#
+#plt.bar(range(0, 26), lda.explained_variance_ratio_, alpha=0.5, align='center')
+#plt.step(range(0, 26), np.cumsum(lda.explained_variance_ratio_), where='mid')
+#plt.ylabel('Explained variance ratio')
+#plt.xlabel('Principal components')
+#
+#plt.show()
 
 lr = LogisticRegression()
 lr = lr.fit(X_train_lda, y_train)
@@ -197,7 +207,7 @@ print('Test accuracy:', lr.score(X_test_lda, y_test))
 
 # ## Kernel principal component analysis in scikit-learn
 
-kpca = KernelPCA(n_components=15, kernel='poly', gamma=10)
+kpca = KernelPCA(n_components=15, kernel='sigmoid', gamma=10)
 X_train_kpca = kpca.fit_transform(X_train_std, y_train)
 X_test_kpca = kpca.transform(X_test_std)
 
@@ -208,28 +218,28 @@ print('Test accuracy:', lr.score(X_test_kpca, y_test))
 
 
 
-#decomposition.IncrementalPCA
-#
-#def plot_KPCA(*data):
-#    X,y = data
-#    kernels = ['linear','poly','rbf','sigmoid']
-#    fig = plt.figure()
-#
-#    for i,kernel in enumerate(kernels):
-#        kpca = decomposition.KernelPCA(n_components=15, kernel=kernel)
-#        kpca.fit(X)
-#        X_r = kpca.transform(X)
-#        ax = fig.add_subplot(2, 2, i+1)
-#        for label in np.unique(y):
-#            position = y == label
-#            ax.scatter(X_r[position,0],X_r[position,1],label="target=%d"%label)
-#            ax.set_xlabel('x[0]')
-#            ax.set_ylabel('x[1]')
-#            ax.legend(loc='best')
-#            ax.set_title('kernel=%s'% kernel)
-#    plt.suptitle("KPCA")
-#    plt.show()
-#plot_KPCA(X, y)
+decomposition.IncrementalPCA
+
+def plot_KPCA(*data):
+    X,y = data
+    kernels = ['linear','poly','rbf','sigmoid']
+    fig = plt.figure()
+
+    for i,kernel in enumerate(kernels):
+        kpca = decomposition.KernelPCA(n_components=15, kernel=kernel)
+        kpca.fit(X_train)
+        X_r = kpca.transform(X_train_std)
+        ax = fig.add_subplot(2, 2, i+1)
+        for label in np.unique(y):
+            position = y_train == label
+            ax.scatter(X_r[position,0],X_r[position,1],label="target=%d"%label)
+            ax.set_xlabel('x[0]')
+            ax.set_ylabel('x[1]')
+            ax.legend(loc='best')
+            ax.set_title('kernel=%s'% kernel)
+    plt.suptitle("KPCA")
+    plt.show()
+plot_KPCA(X_train, y_train)
 
 
 #Fit a logistic classifier model and print accuracy score
@@ -296,6 +306,7 @@ print('Test accuracy:', lr.score(X_test_std, y_test))
 #          bbox_to_anchor=(1.38, 1.03),
 #          ncol=1, fancybox=True)
 #plt.show()
+
 
 
 # ## Combining transformers and estimators in a pipeline
