@@ -77,10 +77,10 @@ pca.explained_variance_ratio_
 
 
 
-plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1])
-plt.xlabel('PC 1')
-plt.ylabel('PC 2')
-plt.show()
+#plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1])
+#plt.xlabel('PC 1')
+#plt.ylabel('PC 2')
+#plt.show()
 
 pca.explained_variance_ratio_.shape      
 
@@ -95,15 +95,106 @@ plt.show()
 
 
 
-pca = PCA(n_components=2)
+pca = PCA(n_components=15)
 X_train_pca = pca.fit_transform(X_train)
 X_test_pca = pca.transform(X_test)
 
 lr = LogisticRegression()
 lr.fit(X_train_pca,y_train)
+
 print('Training accuracy:', lr.score(X_train_pca, y_train))
 print('Test accuracy:', lr.score(X_test_pca, y_test))
 
+
+#feat_labels = df[0:]
+#
+#importances = lr.feature_importances_
+#indices = np.argsort(importances)[::-1]
+#for f in range(X_train.shape[1]):
+#    print("%2d) %-*s %f" % (f + 1, 30, feat_labels[indices[f]], importances[indices[f]]))
+#plt.title('Feature Importance')
+#plt.bar(range(X_train.shape[1]), importances[indices], align='center')
+#plt.xticks(range(X_train.shape[1]), feat_labels[indices], rotation=90)
+#plt.xlim([-1, X_train.shape[1]])
+#plt.tight_layout()
+#plt.show()
+
+
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.decomposition import KernelPCA
+
+# ## LDA via scikit-learn
+
+
+
+
+lda = LDA(n_components=15)
+X_train_lda = lda.fit_transform(X_train, y_train)
+X_test_lda = lda.transform(X_test)
+
+
+lr = LogisticRegression()
+lr = lr.fit(X_train_lda, y_train)
+print('Training accuracy:', lr.score(X_train_lda, y_train))
+print('Test accuracy:', lr.score(X_test_lda, y_test))
+
+
+
+
+#plot_decision_regions(X_train_lda, y_train, classifier=lr)
+#plt.xlabel('LD 1')
+#plt.ylabel('LD 2')
+#plt.legend(loc='lower left')
+#plt.tight_layout()
+#plt.show()
+#
+#
+#plot_decision_regions(X_test_lda, y_test, classifier=lr)
+#plt.xlabel('LD 1')
+#plt.ylabel('LD 2')
+#plt.legend(loc='lower left')
+#plt.tight_layout()
+#plt.show()
+
+
+
+# ## Kernel principal component analysis in scikit-learn
+
+kpca = KernelPCA(n_components=15, kernel='poly', gamma=10)
+X_train_kpca = kpca.fit_transform(X_train, y_train)
+X_test_kpca = kpca.transform(X_test)
+
+lr = LogisticRegression()
+lr = lr.fit(X_train_kpca, y_train)
+print('Training accuracy:', lr.score(X_train_kpca, y_train))
+print('Test accuracy:', lr.score(X_test_kpca, y_test))
+
+from sklearn import datasets,decomposition,manifold
+
+
+decomposition.IncrementalPCA
+
+def plot_KPCA(*data):
+    X,y = data
+    kernels = ['linear','poly','rbf','sigmoid']
+    fig = plt.figure()
+
+    for i,kernel in enumerate(kernels):
+        kpca = decomposition.KernelPCA(n_components=15, kernel=kernel)
+        kpca.fit(X)
+        X_r = kpca.transform(X)
+        ax = fig.add_subplot(2, 2, i+1)
+        for label in np.unique(y):
+            position = y == label
+            ax.scatter(X_r[position,0],X_r[position,1],label="target=%d"%label)
+            ax.set_xlabel('x[0]')
+            ax.set_ylabel('x[1]')
+            ax.legend(loc='best')
+            ax.set_title('kernel=%s'% kernel)
+    plt.suptitle("KPCA")
+    plt.show()
+plot_KPCA(X, y)
 
 
 
