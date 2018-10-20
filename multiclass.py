@@ -116,16 +116,6 @@ pca = PCA()
 X_train_pca = pca.fit_transform(X_train_std)
 pca.explained_variance_ratio_
 
-knn = KNeighborsClassifier(n_neighbors=1, 
-                           p=2, 
-                           metric='minkowski')
-
-plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1])
-plot_decision_regions(X_train_pca, y_train, classifier=knn)
-plt.xlabel('PC 1')
-plt.ylabel('PC 2')
-plt.legend(loc='lower left')
-plt.show()
 
 
 pca.explained_variance_ratio_.shape      
@@ -153,6 +143,7 @@ knn.fit(X_train_pca, y_train)
 print('Training accuracy:', knn.score(X_train_pca, y_train))
 print('Test accuracy:', knn.score(X_test_pca, y_test))
 
+
 #y_train_pred = pca.predict(X_train_pca)
 #print( metrics.accuracy_score(y_train, y_train_pred) )
 
@@ -160,7 +151,7 @@ print('Test accuracy:', knn.score(X_test_pca, y_test))
 # ## LDA via scikit-learn
 
 
-lda = LDA(n_components=15)
+lda = LDA()
 X_train_lda = lda.fit_transform(X_train_std, y_train)
 X_test_lda = lda.transform(X_test_std)
 
@@ -172,6 +163,14 @@ plt.ylabel('Explained variance ratio')
 plt.xlabel('Principal components')
 
 plt.show()
+
+
+lda = LDA()
+X_train_lda = lda.fit_transform(X_train_std, y_train)
+X_test_lda = lda.transform(X_test_std)
+
+
+
 
 knn= KNeighborsClassifier(n_neighbors=1, 
                         p=2, 
@@ -207,7 +206,7 @@ print('Test accuracy:', knn.score(X_test_lda, y_test))
 
 # ## Kernel principal component analysis in scikit-learn
 
-kpca = KernelPCA(n_components=15, kernel='sigmoid', gamma=10)
+kpca = KernelPCA()
 X_train_kpca = kpca.fit_transform(X_train_std, y_train)
 X_test_kpca = kpca.transform(X_test_std)
 
@@ -217,7 +216,7 @@ knn= KNeighborsClassifier(n_neighbors=1,
                         algorithm='auto',
                         leaf_size=1,
                         weights='uniform')
-knn.fit(X_train_std, y_train)
+knn.fit(X_train_kpca, y_train)
 
 print('Training accuracy:', knn.score(X_train_kpca, y_train))
 print('Test accuracy:', knn.score(X_test_kpca, y_test))
@@ -247,17 +246,21 @@ print('Test accuracy:', knn.score(X_test_kpca, y_test))
 #    plt.show()
 #plot_KPCA(X_train, y_train)
 
+#KNN before hypertuning
 
-#Fit a logistic classifier model and print accuracy score
+knn = KNeighborsClassifier(n_neighbors=1, 
+                           p=2, 
+                           metric='minkowski')
+knn.fit(X_train_std, y_train)
+
+print('Training accuracy:', knn.score(X_train_std, y_train))
+print('Test accuracy:', knn.score(X_test_std, y_test))
 
 
-#lr = LogisticRegression(penalty='l2',multi_class='multinomial',solver='lbfgs')
-#lr.fit(X_train_std, y_train)
 
+#Use GridSearchCV to hypertune the parameters
 
-#开始调优使用GridSearchCV找到,最优参数
 knn = KNeighborsClassifier()
-#设置k的范围
 k_range = list(range(1,10))
 leaf_range = list(range(1,2))
 weight_options = ['uniform','distance']
@@ -281,15 +284,13 @@ print('Training accuracy:', knn.score(X_train_std, y_train))
 print('Test accuracy:', knn.score(X_test_std, y_test))
 
 
-#
-#clf = SGDClassifier(loss='squared_loss', penalty='l2', random_state=42)
-#clf.fit(X_train, y_train)
-#
-y_train_pred = knn.predict(X_train)
+
+
+y_train_pred = knn.predict(X_train_std)
 print( metrics.accuracy_score(y_train, y_train_pred) )
 #
 #
-y_pred = knn.predict(X_test)
+y_pred = knn.predict(X_test_std)
 print( metrics.accuracy_score(y_test, y_pred) )
 #
 #
@@ -314,9 +315,9 @@ pipe_knn = make_pipeline(StandardScaler(),
                         leaf_size=1,
                         weights='uniform'))
 
-pipe_knn.fit(X_train_lda, y_train)
-y_pred = pipe_knn.predict(X_test_lda)
-print('Test Accuracy: %.3f' % pipe_knn.score(X_test_lda, y_test))
+pipe_knn.fit(X_train_pca, y_train)
+y_pred = pipe_knn.predict(X_test_pca)
+print('Test Accuracy: %.3f' % pipe_knn.score(X_test_pca, y_test))
 
 
     
@@ -337,13 +338,13 @@ print('Test Accuracy: %.3f' % pipe_knn.score(X_test_lda, y_test))
 #          np.bincount(y_train[train]), score))
 #    
 #print('\nCV accuracy: %.3f +/- %.3f' % (np.mean(scores), np.std(scores)))
-#
+
 
 
 
 
 scores = cross_val_score(estimator=pipe_knn,
-                         X=X_train_lda,
+                         X=X_train_pca,
                          y=y_train,
                          cv=10,
                          n_jobs=1)
@@ -363,7 +364,7 @@ print('CV accuracy: %.3f +/- %.3f' % (np.mean(scores), np.std(scores)))
 
 
 train_sizes, train_scores, test_scores = learning_curve(estimator=pipe_knn,
-                               X=X_train_lda,
+                               X=X_train_pca,
                                y=y_train,
                                train_sizes=np.linspace(0.1, 1.0, 10),
                                cv=10,
@@ -403,22 +404,6 @@ plt.show()
 
 
 
-# ## Addressing over- and underfitting with validation curves
-
-#from yellowbrick.model_selection import ValidationCurve
-#
-#cv = StratifiedKFold(4)
-#param_range = np.arange(3, 20, 2)
-#
-#oz = ValidationCurve(
-#    KNeighborsClassifier(), param_name="n_neighbors",
-#    param_range=param_range, cv=cv, scoring="f1_weighted", n_jobs=4,
-#)
-#
-## Using the same game dataset as in the SVC example
-#oz.fit(X, y)
-#oz.poof()
-
 # ## Bagging
 
 tree = DecisionTreeClassifier(criterion='entropy', 
@@ -443,6 +428,7 @@ tree_train = accuracy_score(y_train, y_train_pred)
 tree_test = accuracy_score(y_test, y_test_pred)
 print('Decision tree train/test accuracies %.3f/%.3f'
       % (tree_train, tree_test))
+
 
 bag = bag.fit(X_train, y_train)
 y_train_pred = bag.predict(X_train)
