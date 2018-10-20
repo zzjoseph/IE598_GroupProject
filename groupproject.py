@@ -157,7 +157,6 @@ X_test_lda = lda.transform(X_test_std)
 
 
 
-
 lr = LogisticRegression()
 lr = lr.fit(X_train_lda, y_train)
 print('Training accuracy:', lr.score(X_train_lda, y_train))
@@ -320,7 +319,7 @@ print('Test accuracy: %.3f' % clf.score(X_test, y_test))
     
 #After tuning
 
-lr = LogisticRegression(C=15.429399415040077, class_weight=None, dual=False,
+lr = LogisticRegression(C=55.992073973395804, class_weight=None, dual=False,
           fit_intercept=True, intercept_scaling=1, max_iter=100,
           multi_class='ovr', n_jobs=1, penalty='l2', random_state=None,
           solver='lbfgs', tol=1e-06, verbose=0, warm_start=False)
@@ -372,7 +371,10 @@ print('CV accuracy: %.3f +/- %.3f' % (np.mean(scores), np.std(scores)))
 
 
 pipe_lr = make_pipeline(StandardScaler(),
-                        LogisticRegression(penalty='l1', random_state=1))
+                        LogisticRegression(C=55.992073973395804, class_weight=None, dual=False,
+          fit_intercept=True, intercept_scaling=1, max_iter=100,
+          multi_class='ovr', n_jobs=1, penalty='l2', random_state=None,
+          solver='lbfgs', tol=1e-06, verbose=0, warm_start=False))
 
 train_sizes, train_scores, test_scores = learning_curve(estimator=pipe_lr,
                                X=X_train,
@@ -405,15 +407,15 @@ plt.fill_between(train_sizes,
                  test_mean - test_std,
                  alpha=0.15, color='green')
 
-#plt.grid()
-#plt.xlabel('Number of training samples')
-#plt.ylabel('Accuracy')
-#plt.legend(loc='lower right')
-#plt.ylim([0.8, 1.03])
-#plt.tight_layout()
-##plt.savefig('images/06_05.png', dpi=300)
-#plt.show()
-#
+plt.grid()
+plt.xlabel('Number of training samples')
+plt.ylabel('Accuracy')
+plt.legend(loc='lower right')
+plt.ylim([0.0, 1.0])
+plt.tight_layout()
+#plt.savefig('images/06_05.png', dpi=300)
+plt.show()
+
 
 
 # ## Addressing over- and underfitting with validation curves
@@ -450,15 +452,15 @@ plt.fill_between(param_range,
                  test_mean - test_std, 
                  alpha=0.15, color='green')
 
-#plt.grid()
-#plt.xscale('log')
-#plt.legend(loc='lower right')
-#plt.xlabel('Parameter C')
-#plt.ylabel('Accuracy')
-#plt.ylim([0.8, 1.0])
-#plt.tight_layout()
-## plt.savefig('images/06_06.png', dpi=300)
-#plt.show()
+plt.grid()
+plt.xscale('log')
+plt.legend(loc='lower right')
+plt.xlabel('Parameter C')
+plt.ylabel('Accuracy')
+plt.ylim([0.0, 1.0])
+plt.tight_layout()
+# plt.savefig('images/06_06.png', dpi=300)
+plt.show()
 
 
 
