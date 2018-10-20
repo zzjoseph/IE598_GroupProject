@@ -50,6 +50,7 @@ from sklearn.metrics import classification_report
 import scipy
 from sklearn.ensemble import BaggingClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
 
 
 df = pd.read_csv("/Users/siyangzhang/Desktop/课程/ie598 machine learning in finance/groupproject/MLF_GP1_CreditScore.csv")
@@ -65,9 +66,6 @@ print( X_train.shape, y_train.shape)
 
 # Standardize the features
 
-#scaler = preprocessing.StandardScaler().fit(X_train)
-#X_train = scaler.transform(X_train)
-#X_test = scaler.transform(X_test)
 
 sc = StandardScaler()
 X_train_std = sc.fit_transform(X_train)
@@ -112,19 +110,22 @@ def plot_decision_regions(X, y, classifier, resolution=0.02):
                     marker=markers[idx], 
                     label=cl)
 
-
+#PCA
+        
 pca = PCA()
 X_train_pca = pca.fit_transform(X_train_std)
 pca.explained_variance_ratio_
 
+knn = KNeighborsClassifier(n_neighbors=1, 
+                           p=2, 
+                           metric='minkowski')
 
-#
-#plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1])
-#plot_decision_regions(X_train_pca, y_train, classifier=lr)
-#plt.xlabel('PC 1')
-#plt.ylabel('PC 2')
-#plt.legend(loc='lower left')
-#plt.show()
+plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1])
+plot_decision_regions(X_train_pca, y_train, classifier=knn)
+plt.xlabel('PC 1')
+plt.ylabel('PC 2')
+plt.legend(loc='lower left')
+plt.show()
 
 
 pca.explained_variance_ratio_.shape      
@@ -138,75 +139,64 @@ plt.show()
 
 
 
-
-
 pca = PCA(n_components=15)
 X_train_pca = pca.fit_transform(X_train_std)
 X_test_pca = pca.transform(X_test_std)
 
 
-lr = LogisticRegression(penalty='l2',multi_class='multinomial',solver='lbfgs')
 
-lr.fit(X_train_pca,y_train)
+knn = KNeighborsClassifier(n_neighbors=1, 
+                           p=2, 
+                           metric='minkowski')
+knn.fit(X_train_pca, y_train)
 
-print('Training accuracy:', lr.score(X_train_pca, y_train))
-print('Test accuracy:', lr.score(X_test_pca, y_test))
+print('Training accuracy:', knn.score(X_train_pca, y_train))
+print('Test accuracy:', knn.score(X_test_pca, y_test))
 
 #y_train_pred = pca.predict(X_train_pca)
 #print( metrics.accuracy_score(y_train, y_train_pred) )
 
 
-#feat_labels = df[0:]
-#
-#importances = lr.feature_importances_
-#indices = np.argsort(importances)[::-1]
-#for f in range(X_train.shape[1]):
-#    print("%2d) %-*s %f" % (f + 1, 30, feat_labels[indices[f]], importances[indices[f]]))
-#plt.title('Feature Importance')
-#plt.bar(range(X_train.shape[1]), importances[indices], align='center')
-#plt.xticks(range(X_train.shape[1]), feat_labels[indices], rotation=90)
-#plt.xlim([-1, X_train.shape[1]])
-#plt.tight_layout()
-#plt.show()
-
-
-
-
 # ## LDA via scikit-learn
 
 
-
-
-lda = LDA()
+lda = LDA(n_components=15)
 X_train_lda = lda.fit_transform(X_train_std, y_train)
 X_test_lda = lda.transform(X_test_std)
 
-#lda.explained_variance_ratio_.shape      
-#
-#plt.bar(range(0, 26), lda.explained_variance_ratio_, alpha=0.5, align='center')
-#plt.step(range(0, 26), np.cumsum(lda.explained_variance_ratio_), where='mid')
-#plt.ylabel('Explained variance ratio')
-#plt.xlabel('Principal components')
-#
-#plt.show()
+lda.explained_variance_ratio_.shape      
 
-lr = LogisticRegression()
-lr = lr.fit(X_train_lda, y_train)
-print('Training accuracy:', lr.score(X_train_lda, y_train))
-print('Test accuracy:', lr.score(X_test_lda, y_test))
+plt.bar(range(0, 15), lda.explained_variance_ratio_, alpha=0.5, align='center')
+plt.step(range(0, 15), np.cumsum(lda.explained_variance_ratio_), where='mid')
+plt.ylabel('Explained variance ratio')
+plt.xlabel('Principal components')
+
+plt.show()
+
+knn= KNeighborsClassifier(n_neighbors=1, 
+                        p=2, 
+                        metric='minkowski',
+                        algorithm='auto',
+                        leaf_size=1,
+                        weights='uniform')
+knn.fit(X_train_lda, y_train)
+
+print('Training accuracy:', knn.score(X_train_lda, y_train))
+print('Test accuracy:', knn.score(X_test_lda, y_test))
 
 
 
 
-#plot_decision_regions(X_train_lda, y_train, classifier=lr)
+#plot_decision_regions(X_train_lda, y_train, classifier=knn)
 #plt.xlabel('LD 1')
 #plt.ylabel('LD 2')
 #plt.legend(loc='lower left')
 #plt.tight_layout()
 #plt.show()
+
 #
 #
-#plot_decision_regions(X_test_lda, y_test, classifier=lr)
+#plot_decision_regions(X_test_lda, y_test, classifier=knn)
 #plt.xlabel('LD 1')
 #plt.ylabel('LD 2')
 #plt.legend(loc='lower left')
@@ -221,101 +211,93 @@ kpca = KernelPCA(n_components=15, kernel='sigmoid', gamma=10)
 X_train_kpca = kpca.fit_transform(X_train_std, y_train)
 X_test_kpca = kpca.transform(X_test_std)
 
-lr = LogisticRegression()
-lr = lr.fit(X_train_kpca, y_train)
-print('Training accuracy:', lr.score(X_train_kpca, y_train))
-print('Test accuracy:', lr.score(X_test_kpca, y_test))
+knn= KNeighborsClassifier(n_neighbors=1, 
+                        p=2, 
+                        metric='minkowski',
+                        algorithm='auto',
+                        leaf_size=1,
+                        weights='uniform')
+knn.fit(X_train_std, y_train)
+
+print('Training accuracy:', knn.score(X_train_kpca, y_train))
+print('Test accuracy:', knn.score(X_test_kpca, y_test))
 
 
 
-decomposition.IncrementalPCA
-
-def plot_KPCA(*data):
-    X,y = data
-    kernels = ['linear','poly','rbf','sigmoid']
-    fig = plt.figure()
-
-    for i,kernel in enumerate(kernels):
-        kpca = decomposition.KernelPCA(n_components=15, kernel=kernel)
-        kpca.fit(X_train)
-        X_r = kpca.transform(X_train_std)
-        ax = fig.add_subplot(2, 2, i+1)
-        for label in np.unique(y):
-            position = y_train == label
-            ax.scatter(X_r[position,0],X_r[position,1],label="target=%d"%label)
-            ax.set_xlabel('x[0]')
-            ax.set_ylabel('x[1]')
-            ax.legend(loc='best')
-            ax.set_title('kernel=%s'% kernel)
-    plt.suptitle("KPCA")
-    plt.show()
-plot_KPCA(X_train, y_train)
+#decomposition.IncrementalPCA
+#
+#def plot_KPCA(*data):
+#    X,y = data
+#    kernels = ['linear','poly','rbf','sigmoid']
+#    fig = plt.figure()
+#
+#    for i,kernel in enumerate(kernels):
+#        kpca = decomposition.KernelPCA(n_components=15, kernel=kernel)
+#        kpca.fit(X_train)
+#        X_r = kpca.transform(X_train_std)
+#        ax = fig.add_subplot(2, 2, i+1)
+#        for label in np.unique(y):
+#            position = y_train == label
+#            ax.scatter(X_r[position,0],X_r[position,1],label="target=%d"%label)
+#            ax.set_xlabel('x[0]')
+#            ax.set_ylabel('x[1]')
+#            ax.legend(loc='best')
+#            ax.set_title('kernel=%s'% kernel)
+#    plt.suptitle("KPCA")
+#    plt.show()
+#plot_KPCA(X_train, y_train)
 
 
 #Fit a logistic classifier model and print accuracy score
 
 
-lr = LogisticRegression(penalty='l2',multi_class='multinomial',solver='lbfgs')
-lr.fit(X_train_std, y_train)
-print('Training accuracy:', lr.score(X_train_std, y_train))
-print('Test accuracy:', lr.score(X_test_std, y_test))
+#lr = LogisticRegression(penalty='l2',multi_class='multinomial',solver='lbfgs')
+#lr.fit(X_train_std, y_train)
 
 
+#开始调优使用GridSearchCV找到,最优参数
+knn = KNeighborsClassifier()
+#设置k的范围
+k_range = list(range(1,10))
+leaf_range = list(range(1,2))
+weight_options = ['uniform','distance']
+algorithm_options = ['auto','ball_tree','kd_tree','brute']
+param_gridknn = dict(n_neighbors = k_range,weights = weight_options,algorithm=algorithm_options,leaf_size=leaf_range)
+gridKNN = GridSearchCV(knn,param_gridknn,cv=10,scoring='accuracy',verbose=1)
+gridKNN.fit(X_train,y_train)
+print('best score is:',str(gridKNN.best_score_))
+print('best params are:',str(gridKNN.best_params_))
 
+
+knn= KNeighborsClassifier(n_neighbors=1, 
+                        p=2, 
+                        metric='minkowski',
+                        algorithm='auto',
+                        leaf_size=1,
+                        weights='uniform')
+knn.fit(X_train_std, y_train)
+
+print('Training accuracy:', knn.score(X_train_std, y_train))
+print('Test accuracy:', knn.score(X_test_std, y_test))
+
+
+#
 #clf = SGDClassifier(loss='squared_loss', penalty='l2', random_state=42)
 #clf.fit(X_train, y_train)
+#
+y_train_pred = knn.predict(X_train)
+print( metrics.accuracy_score(y_train, y_train_pred) )
+#
+#
+y_pred = knn.predict(X_test)
+print( metrics.accuracy_score(y_test, y_pred) )
+#
+#
+print( metrics.classification_report(y_test, y_pred) )
+#
+#
+print( metrics.confusion_matrix(y_test, y_pred) )
 
-#y_train_pred = clf.predict(X_train)
-#print( metrics.accuracy_score(y_train, y_train_pred) )
-#
-#
-#y_pred = clf.predict(X_test)
-#print( metrics.accuracy_score(y_test, y_pred) )
-#
-#
-#print( metrics.classification_report(y_test, y_pred) )
-#
-#
-#print( metrics.confusion_matrix(y_test, y_pred) )
-
-
-#lr.intercept_
-#np.set_printoptions(8)
-#lr.coef_[lr.coef_!=0].shape
-#lr.coef_
-
-
-#fig = plt.figure()
-#ax = plt.subplot(111)
-#    
-#colors = ['blue', 'green', 'red', 'cyan', 
-#          'magenta', 'yellow', 'black', 
-#          'pink', 'lightgreen', 'lightblue', 
-#          'gray', 'indigo', 'orange']
-#
-#weights, params = [], []
-#for c in np.arange(-4., 6.):
-#    lr = LogisticRegression(penalty='l1', C=10.**c, random_state=0)
-#    lr.fit(X_train_std, y_train)
-#    weights.append(lr.coef_[1])
-#    params.append(10**c)
-#
-#weights = np.array(weights)
-#
-#for column, color in zip(range(weights.shape[1]), colors):
-#    plt.plot(params, weights[:, column],
-#             label=df.columns[column + 1],
-#             color=color)
-#plt.axhline(0, color='black', linestyle='--', linewidth=3)
-#plt.xlim([10**(-5), 10**5])
-#plt.ylabel('weight coefficient')
-#plt.xlabel('C')
-#plt.xscale('log')
-#plt.legend(loc='upper left')
-#ax.legend(loc='upper center', 
-#          bbox_to_anchor=(1.38, 1.03),
-#          ncol=1, fancybox=True)
-#plt.show()
 
 
 
@@ -323,34 +305,22 @@ print('Test accuracy:', lr.score(X_test_std, y_test))
 
 
 
-pipe_lr = make_pipeline(StandardScaler(),
+pipe_knn = make_pipeline(StandardScaler(),
                         PCA(n_components=15),
-                        LogisticRegression(random_state=1))
+                        KNeighborsClassifier(n_neighbors=1, 
+                        p=2, 
+                        metric='minkowski',
+                        algorithm='auto',
+                        leaf_size=1,
+                        weights='uniform'))
 
-pipe_lr.fit(X_train, y_train)
-y_pred = pipe_lr.predict(X_test)
-print('Test Accuracy: %.3f' % pipe_lr.score(X_test, y_test))
+pipe_knn.fit(X_train_lda, y_train)
+y_pred = pipe_knn.predict(X_test_lda)
+print('Test Accuracy: %.3f' % pipe_knn.score(X_test_lda, y_test))
 
 
-
-#采用随机搜索，给参数一个范围，然后系统随机选择参数，进行检验，然后选择最好的
-tuned_parameters={'C':scipy.stats.expon(scale=100),
-                  'multi_class':['ovr','multinomial']}
-clf=RandomizedSearchCV(LogisticRegression(penalty='l2',solver='lbfgs',tol=1e-6),
-                   tuned_parameters,cv=10,scoring='accuracy',n_iter=100)
- 
-clf.fit(X_train,y_train)
-print('best parameters:',clf.best_estimator_)
-print(classification_report(y_test,clf.predict(X_test)))
-print(metrics.confusion_matrix(y_test,clf.predict(X_test)))
-
-print(clf.best_score_)
-print(clf.best_params_)
-
-print('Test accuracy: %.3f' % clf.score(X_test, y_test))
     
-
-# ## K-fold cross-validation
+ ## K-fold cross-validation
 
 
 
@@ -360,20 +330,20 @@ print('Test accuracy: %.3f' % clf.score(X_test, y_test))
 #
 #scores = []
 #for k, (train, test) in enumerate(kfold):
-#    pipe_lr.fit(X_train[train], y_train[train])
-#    score = pipe_lr.score(X_train[test], y_train[test])
+#    pipe_knn.fit(X_train[train], y_train[train])
+#    score = pipe_knn.score(X_train[test], y_train[test])
 #    scores.append(score)
 #    print('Fold: %2d, Class dist.: %s, Acc: %.3f' % (k+1,
 #          np.bincount(y_train[train]), score))
 #    
 #print('\nCV accuracy: %.3f +/- %.3f' % (np.mean(scores), np.std(scores)))
+#
 
 
 
 
-
-scores = cross_val_score(estimator=pipe_lr,
-                         X=X_train,
+scores = cross_val_score(estimator=pipe_knn,
+                         X=X_train_lda,
                          y=y_train,
                          cv=10,
                          n_jobs=1)
@@ -390,11 +360,10 @@ print('CV accuracy: %.3f +/- %.3f' % (np.mean(scores), np.std(scores)))
 
 
 
-pipe_lr = make_pipeline(StandardScaler(),
-                        LogisticRegression(penalty='l1', random_state=1))
 
-train_sizes, train_scores, test_scores = learning_curve(estimator=pipe_lr,
-                               X=X_train,
+
+train_sizes, train_scores, test_scores = learning_curve(estimator=pipe_knn,
+                               X=X_train_lda,
                                y=y_train,
                                train_sizes=np.linspace(0.1, 1.0, 10),
                                cv=10,
@@ -424,62 +393,31 @@ plt.fill_between(train_sizes,
                  test_mean - test_std,
                  alpha=0.15, color='green')
 
-#plt.grid()
-#plt.xlabel('Number of training samples')
-#plt.ylabel('Accuracy')
-#plt.legend(loc='lower right')
-#plt.ylim([0.8, 1.03])
-#plt.tight_layout()
-##plt.savefig('images/06_05.png', dpi=300)
-#plt.show()
-#
+plt.grid()
+plt.xlabel('Number of training samples')
+plt.ylabel('Accuracy')
+plt.legend(loc='lower right')
+plt.ylim([0.0, 1.0])
+plt.tight_layout()
+plt.show()
+
 
 
 # ## Addressing over- and underfitting with validation curves
 
-param_range = [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
-train_scores, test_scores = validation_curve(
-                estimator=pipe_lr, 
-                X=X_train, 
-                y=y_train, 
-                param_name='logisticregression__C', 
-                param_range=param_range,
-                cv=10)
-
-train_mean = np.mean(train_scores, axis=1)
-train_std = np.std(train_scores, axis=1)
-test_mean = np.mean(test_scores, axis=1)
-test_std = np.std(test_scores, axis=1)
-
-plt.plot(param_range, train_mean, 
-         color='blue', marker='o', 
-         markersize=5, label='training accuracy')
-
-plt.fill_between(param_range, train_mean + train_std,
-                 train_mean - train_std, alpha=0.15,
-                 color='blue')
-
-plt.plot(param_range, test_mean, 
-         color='green', linestyle='--', 
-         marker='s', markersize=5, 
-         label='validation accuracy')
-
-plt.fill_between(param_range, 
-                 test_mean + test_std,
-                 test_mean - test_std, 
-                 alpha=0.15, color='green')
-
-#plt.grid()
-#plt.xscale('log')
-#plt.legend(loc='lower right')
-#plt.xlabel('Parameter C')
-#plt.ylabel('Accuracy')
-#plt.ylim([0.8, 1.0])
-#plt.tight_layout()
-## plt.savefig('images/06_06.png', dpi=300)
-#plt.show()
-
-
+#from yellowbrick.model_selection import ValidationCurve
+#
+#cv = StratifiedKFold(4)
+#param_range = np.arange(3, 20, 2)
+#
+#oz = ValidationCurve(
+#    KNeighborsClassifier(), param_name="n_neighbors",
+#    param_range=param_range, cv=cv, scoring="f1_weighted", n_jobs=4,
+#)
+#
+## Using the same game dataset as in the SVC example
+#oz.fit(X, y)
+#oz.poof()
 
 # ## Bagging
 
