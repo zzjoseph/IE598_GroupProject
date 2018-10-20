@@ -132,32 +132,16 @@ plt.show()
 
 
 
-pca = PCA(n_components=15)
+pca = PCA()
 X_train_pca = pca.fit_transform(X_train_std)
-X_test_pca = pca.transform(X_test_std)
+X_test_pca = pca.fit_transform(X_test_std)
 
-lr = LogisticRegression(penalty='l1')
+lr = LogisticRegression()
 lr.fit(X_train_pca,y_train)
 
 print('Training accuracy:', lr.score(X_train_pca, y_train))
 print('Test accuracy:', lr.score(X_test_pca, y_test))
 
-#y_train_pred = pca.predict(X_train_pca)
-#print( metrics.accuracy_score(y_train, y_train_pred) )
-
-
-#feat_labels = df[0:]
-#
-#importances = lr.feature_importances_
-#indices = np.argsort(importances)[::-1]
-#for f in range(X_train.shape[1]):
-#    print("%2d) %-*s %f" % (f + 1, 30, feat_labels[indices[f]], importances[indices[f]]))
-#plt.title('Feature Importance')
-#plt.bar(range(X_train.shape[1]), importances[indices], align='center')
-#plt.xticks(range(X_train.shape[1]), feat_labels[indices], rotation=90)
-#plt.xlim([-1, X_train.shape[1]])
-#plt.tight_layout()
-#plt.show()
 
 
 
@@ -171,19 +155,14 @@ lda = LDA()
 X_train_lda = lda.fit_transform(X_train_std, y_train)
 X_test_lda = lda.transform(X_test_std)
 
-#lda.explained_variance_ratio_.shape      
-#
-#plt.bar(range(0, 26), lda.explained_variance_ratio_, alpha=0.5, align='center')
-#plt.step(range(0, 26), np.cumsum(lda.explained_variance_ratio_), where='mid')
-#plt.ylabel('Explained variance ratio')
-#plt.xlabel('Principal components')
-#
-#plt.show()
+
+
 
 lr = LogisticRegression()
 lr = lr.fit(X_train_lda, y_train)
 print('Training accuracy:', lr.score(X_train_lda, y_train))
 print('Test accuracy:', lr.score(X_test_lda, y_test))
+
 
 
 
@@ -218,34 +197,34 @@ print('Test accuracy:', lr.score(X_test_kpca, y_test))
 
 
 
-decomposition.IncrementalPCA
-
-def plot_KPCA(*data):
-    X,y = data
-    kernels = ['linear','poly','rbf','sigmoid']
-    fig = plt.figure()
-
-    for i,kernel in enumerate(kernels):
-        kpca = decomposition.KernelPCA(n_components=15, kernel=kernel)
-        kpca.fit(X_train)
-        X_r = kpca.transform(X_train_std)
-        ax = fig.add_subplot(2, 2, i+1)
-        for label in np.unique(y):
-            position = y_train == label
-            ax.scatter(X_r[position,0],X_r[position,1],label="target=%d"%label)
-            ax.set_xlabel('x[0]')
-            ax.set_ylabel('x[1]')
-            ax.legend(loc='best')
-            ax.set_title('kernel=%s'% kernel)
-    plt.suptitle("KPCA")
-    plt.show()
-plot_KPCA(X_train, y_train)
-
+#decomposition.IncrementalPCA
+#
+#def plot_KPCA(*data):
+#    X,y = data
+#    kernels = ['linear','poly','rbf','sigmoid']
+#    fig = plt.figure()
+#
+#    for i,kernel in enumerate(kernels):
+#        kpca = decomposition.KernelPCA(n_components=15, kernel=kernel)
+#        kpca.fit(X_train)
+#        X_r = kpca.transform(X_train_std)
+#        ax = fig.add_subplot(2, 2, i+1)
+#        for label in np.unique(y):
+#            position = y_train == label
+#            ax.scatter(X_r[position,0],X_r[position,1],label="target=%d"%label)
+#            ax.set_xlabel('x[0]')
+#            ax.set_ylabel('x[1]')
+#            ax.legend(loc='best')
+#            ax.set_title('kernel=%s'% kernel)
+#    plt.suptitle("KPCA")
+#    plt.show()
+#plot_KPCA(X_train, y_train)
+#
 
 #Fit a logistic classifier model and print accuracy score
 
 
-lr = LogisticRegression(penalty='l1', C=1.0)
+lr = LogisticRegression()
 lr.fit(X_train_std, y_train)
 print('Training accuracy:', lr.score(X_train_std, y_train))
 print('Test accuracy:', lr.score(X_test_std, y_test))
@@ -323,7 +302,7 @@ print('Test Accuracy: %.3f' % pipe_lr.score(X_test, y_test))
 
 
 
-#采用随机搜索，给参数一个范围，然后系统随机选择参数，进行检验，然后选择最好的
+#Use GridSearchCV to hypertune the parameters
 tuned_parameters={'C':scipy.stats.expon(scale=100),
                   'multi_class':['ovr','multinomial']}
 clf=RandomizedSearchCV(LogisticRegression(penalty='l2',solver='lbfgs',tol=1e-6),
@@ -339,6 +318,18 @@ print(clf.best_params_)
 
 print('Test accuracy: %.3f' % clf.score(X_test, y_test))
     
+#After tuning
+
+lr = LogisticRegression(C=15.429399415040077, class_weight=None, dual=False,
+          fit_intercept=True, intercept_scaling=1, max_iter=100,
+          multi_class='ovr', n_jobs=1, penalty='l2', random_state=None,
+          solver='lbfgs', tol=1e-06, verbose=0, warm_start=False)
+lr.fit(X_train_std, y_train)
+print('Training accuracy:', lr.score(X_train_std, y_train))
+print('Test accuracy:', lr.score(X_test_std, y_test))
+
+
+
 
 # ## K-fold cross-validation
 
